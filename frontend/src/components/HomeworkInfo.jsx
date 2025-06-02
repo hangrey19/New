@@ -11,13 +11,13 @@ import { Link, useParams } from "react-router-dom";
 import { actFetchHomeworkDetailList } from "../redux/modules/Homework/action";
 import Loading from "./Loading";
 import MobileDateTimePicker from "@mui/lab/MobileDateTimePicker";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function HomeworkInfo() {
   const classInfo = JSON.parse(localStorage.getItem("classInfo"));
   const { homeworkId, classroomId } = useParams();
 
-  const history = useHistory();
+  const history = useNavigate();
   const dispatch = useDispatch();
 
   const data = useSelector((state) => state.homeworkDetailReducer.data);

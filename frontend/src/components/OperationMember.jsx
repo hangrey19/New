@@ -15,7 +15,7 @@ import {
   actPeopleSearch,
 } from "../redux/modules/People/action";
 import { Link, useParams } from "react-router-dom";
-import { Box } from "@mui/material/node_modules/@mui/system";
+import { Box } from "@mui/system";
 function OperationMember() {
   const { classroomId } = useParams();
 

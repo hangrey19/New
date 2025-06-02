@@ -1,46 +1,29 @@
 import React, { Fragment } from "react";
-import { Route } from "react-router";
 import NavbarHome from "../../components/NavbarHome";
 import Footer from "../../components/Footer";
-import { Redirect } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
-function LayoutHome(props) {
+function LayoutHome({ children }) {
   return (
     <Fragment>
       <NavbarHome />
-      {props.children}
+      {children}
       <Footer />
     </Fragment>
   );
 }
 
-export default function HomeTemplate({ Component, ...props }) {
-  let isLogin = false;
-  if (localStorage.getItem("User")) {
-    isLogin = true;
+export default function HomeTemplate({ Component }) {
+  const location = useLocation();
+  const isLogin = !!localStorage.getItem("User");
+
+  if (!isLogin) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return (
-    <Route
-      {...props}
-      render={(propsComponent) => {
-        if (isLogin) {
-          return (
-            <LayoutHome>
-              <Component {...propsComponent} />
-            </LayoutHome>
-          );
-        } else {
-          return (
-            <Redirect
-              to={{
-                pathname: "/login",
-                state: { from: propsComponent.location },
-              }}
-            />
-          );
-        }
-      }}
-    />
+    <LayoutHome>
+      <Component />
+    </LayoutHome>
   );
 }

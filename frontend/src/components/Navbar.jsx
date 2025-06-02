@@ -12,7 +12,7 @@ import Button from "@mui/material/Button";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
-import { Link, NavLink, useHistory } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   Badge,
   CssBaseline,
@@ -97,7 +97,7 @@ const Navbar = (props) => {
   const { pages } = props;
   const settings = ["Đăng xuất"];
 
-  const history = useHistory();
+  const history = useNavigate();
 
   let avatar = null;
 
@@ -141,10 +141,12 @@ const Navbar = (props) => {
   };
   const handleCloseModalLogout = () => setOpenModalLogout(false);
 
+  const navigate = useNavigate();
+
   const handleLogout = () => {
     handleCloseModalLogout();
     localStorage.clear();
-    history.replace("/");
+    navigate("/", { replace: true });  // dùng navigate thay vì history.replace
   };
 
   const ModalLogout = () => {

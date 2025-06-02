@@ -10,7 +10,7 @@ import {
   resetCreatePost,
 } from "../redux/modules/Stream/Post/action";
 
-import { Box } from "@mui/material/node_modules/@mui/system";
+import { Box } from "@mui/system";
 // TODO: action call API
 function OperationStream() {
   let className = null;

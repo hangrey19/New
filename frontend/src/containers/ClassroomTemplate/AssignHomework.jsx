@@ -18,20 +18,20 @@ import CreatableSelect from "react-select/creatable";
 import Files from "react-files";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { pathImgFromIndex } from "../../utils/constants";
-import { Link, Redirect, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import {
   createHomework,
   resetCreateHomework,
 } from "../../redux/modules/Homework/action";
 import Loading from "../../components/Loading";
 import MobileDateTimePicker from "@mui/lab/MobileDateTimePicker";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function AssignHomework() {
   const classInfo = JSON.parse(localStorage.getItem("classInfo"));
   const { classroomId } = useParams();
 
-  const history = useHistory();
+  const history = useNavigate();
   const dispatch = useDispatch();
   const [render, setRender] = useState(false);
 
@@ -246,7 +246,7 @@ function AssignHomework() {
     // history.push(`/classroom/${classroomId}/homework`);
 
     return (
-      <Redirect
+      <Navigate
         to={{
           pathname: `/classroom/${classroomId}/homework`,
           state: { reason: "Tạo bài tập thành công!" },

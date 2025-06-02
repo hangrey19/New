@@ -1,5 +1,4 @@
-import React from "react";
-import { useEffect} from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { styled } from "@mui/material/styles";
 import TextField from "@mui/material/TextField";
@@ -7,16 +6,38 @@ import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import StaticDatePicker from "@mui/lab/StaticDatePicker";
 import PickersDay from "@mui/lab/PickersDay";
-import endOfWeek from "date-fns/endOfWeek";
-import isSameDay from "date-fns/isSameDay";
-import isWithinInterval from "date-fns/isWithinInterval";
-import startOfWeek from "date-fns/startOfWeek";
-import TimeTable from "react-timetable-events"
+import {
+  startOfWeek,
+  endOfWeek,
+  isWithinInterval,
+  isSameDay,
+  format,
+  parse,
+  getDay,
+} from "date-fns";
+import { enUS } from "date-fns/locale";
 
+import {
+  Calendar as BigCalendar,
+  dateFnsLocalizer,
+} from "react-big-calendar";
+import "react-big-calendar/lib/css/react-big-calendar.css";
 import moment from "moment";
-import{
+import {
   fetchAllCalendar,
 } from "../../redux/modules/Calendar/action.js";
+
+const locales = {
+  "en-US": enUS,
+};
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales,
+});
+
 const CustomPickersDay = styled(PickersDay, {
   shouldForwardProp: (prop) =>
     prop !== "dayIsBetween" && prop !== "isFirstDay" && prop !== "isLastDay",
@@ -38,33 +59,64 @@ const CustomPickersDay = styled(PickersDay, {
     borderBottomRightRadius: "50%",
   }),
 }));
-function Calendar() {
-  const [value, setValue] = React.useState(new Date());
 
-  const renderWeekPickerDay = (date, selectedDates, pickersDayProps) => {
-    if (!value) {
-      return <PickersDay {...pickersDayProps} />;
+function Calendar() {
+  const dispatch = useDispatch();
+  const [value, setValue] = useState(new Date());
+
+  useEffect(() => {
+    dispatch(fetchAllCalendar());
+  }, [dispatch]);
+
+  const dataCalendar = useSelector(
+    (state) => state.fetchAllCalendarReducer?.data
+  );
+
+  // Chuyển dữ liệu từ định dạng `events` cũ sang `react-big-calendar` format
+  const convertOldEventsToNew = () => {
+    const result = [];
+
+    const days = {
+      monday: 1,
+      tuesday: 2,
+      wednesday: 3,
+      thursday: 4,
+      friday: 5,
+      saturday: 6,
+      sunday: 0,
+    };
+
+    for (let [day, events] of Object.entries(sampleOldEvents)) {
+      const dayOffset = days[day];
+      events.forEach((event) => {
+        const baseDate = startOfWeek(value); // Lấy ngày đầu tuần
+        const start = moment(baseDate).add(dayOffset, "days");
+        const startTime = moment(event.startTime);
+        const endTime = moment(event.endTime);
+
+        const startDate = start.clone().set({
+          hour: startTime.hour(),
+          minute: startTime.minute(),
+        }).toDate();
+
+        const endDate = start.clone().set({
+          hour: endTime.hour(),
+          minute: endTime.minute(),
+        }).toDate();
+
+        result.push({
+          title: event.name,
+          start: startDate,
+          end: endDate,
+          allDay: false,
+        });
+      });
     }
 
-    const start = startOfWeek(value);
-    const end = endOfWeek(value);
-
-    const dayIsBetween = isWithinInterval(date, { start, end });
-    const isFirstDay = isSameDay(date, start);
-    const isLastDay = isSameDay(date, end);
-
-    return (
-      <CustomPickersDay
-        {...pickersDayProps}
-        disableMargin
-        dayIsBetween={dayIsBetween}
-        isFirstDay={isFirstDay}
-        isLastDay={isLastDay}
-      />
-    );
+    return result;
   };
 
-  const events = {
+  const sampleOldEvents = {
     monday: [
       {
         id: 1,
@@ -73,8 +125,6 @@ function Calendar() {
         startTime: moment("2018-02-23T11:30:00"),
         endTime: moment("2018-02-23T13:30:00"),
       },
-    ],
-    tuesday: [
     ],
     wednesday: [
       {
@@ -91,9 +141,6 @@ function Calendar() {
         startTime: moment("2018-02-22T15:00:00"),
         endTime: moment("2018-02-22T16:30:00"),
       },
-    ],
-    thursday: [
-      
     ],
     friday: [
       {
@@ -127,71 +174,59 @@ function Calendar() {
         endTime: moment("2018-02-22T17:30:00"),
       },
     ],
+    tuesday: [],
+    thursday: [],
     sunday: [],
   };
-  const renderHour = (hour, defaultAttributes, styles) => {
+
+  const events = useMemo(() => convertOldEventsToNew(), [value]);
+
+  const renderWeekPickerDay = (date, selectedDates, pickersDayProps) => {
+    const start = startOfWeek(value);
+    const end = endOfWeek(value);
+
+    const dayIsBetween = isWithinInterval(date, { start, end });
+    const isFirstDay = isSameDay(date, start);
+    const isLastDay = isSameDay(date, end);
+
     return (
-      <div {...defaultAttributes} key={hour}>
-        {hour}
-      </div>
+      <CustomPickersDay
+        {...pickersDayProps}
+        disableMargin
+        dayIsBetween={dayIsBetween}
+        isFirstDay={isFirstDay}
+        isLastDay={isLastDay}
+      />
     );
   };
-  const renderEvent = (event, defaultAttributes, styles) => {
-    return (
-      <div
-        {...defaultAttributes}
-        title={event.name}
-        key={event.id}
-        style={{
-          ...defaultAttributes.style,
-          borderRadius: "10px",
-        }}
-      >
-        <span className={styles.event_info}> {event.name} </span>
-        <span className={styles.event_info}>
-          {event.startTime.format("HH:mm")} - {event.endTime.format("HH:mm")}
-        </span>
-      </div>
-    );
-   
-  };
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(fetchAllCalendar());
-  //eslint-disable-next-line
-}, []);
-  const dataCalendar = useSelector(
-    (state) => state.fetchAllCalendarReducer?.data
-  );
-  console.log(dataCalendar);
 
   return (
-    <div>
-      <div className="calendar-container">
-        <div className="calender-pick-week">
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <StaticDatePicker
-              displayStaticWrapperAs="desktop"
-              label="Week picker"
-              value={value}
-              onChange={(newValue) => {
-                setValue(newValue);
-              }}
-              renderDay={renderWeekPickerDay}
-              renderInput={(params) => <TextField {...params} />}
-              inputFormat="'Week of' MMM d"
-            />
-          </LocalizationProvider>
-        </div>
-        <div className="calendar-todo">
-            <TimeTable 
-              events={events}
-              renderHour={renderHour}
-              renderEvent={renderEvent}
-              hoursInterval={[7, 24]}
-              timeLabel=""
-            />
-        </div>
+    <div className="calendar-container" style={{ display: "flex", gap: 20 }}>
+      <div className="calendar-pick-week">
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <StaticDatePicker
+            displayStaticWrapperAs="desktop"
+            label="Week picker"
+            value={value}
+            onChange={(newValue) => {
+              setValue(newValue);
+            }}
+            renderDay={renderWeekPickerDay}
+            renderInput={(params) => <TextField {...params} />}
+            inputFormat="'Tuần của' MMM d"
+          />
+        </LocalizationProvider>
+      </div>
+      <div className="calendar-big" style={{ flex: 1 }}>
+        <BigCalendar
+          localizer={localizer}
+          events={events}
+          startAccessor="start"
+          endAccessor="end"
+          style={{ height: 600 }}
+          defaultView="week"
+          views={["week", "day"]}
+        />
       </div>
     </div>
   );

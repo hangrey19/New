@@ -1,46 +1,29 @@
 import React from "react";
-import { Route } from "react-router";
 import Footer from "../../components/Footer";
 import NavbarClassroom from "../../components/NavbarClassroom";
-import { Redirect } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
-function LayoutClassroom(props) {
+function LayoutClassroom({ children }) {
   return (
-    <React.Fragment>
+    <>
       <NavbarClassroom />
-      {props.children}
+      {children}
       <Footer />
-    </React.Fragment>
+    </>
   );
 }
 
-export default function ClassroomTemplate({ Component, ...props }) {
-  let isLogin = false;
-  if (localStorage.getItem("User")) {
-    isLogin = true;
+export default function ClassroomTemplate({ Component }) {
+  const location = useLocation();
+  const isLogin = !!localStorage.getItem("User");
+
+  if (!isLogin) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return (
-    <Route
-      {...props}
-      render={(propsComponent) => {
-        if (isLogin) {
-          return (
-            <LayoutClassroom>
-              <Component {...propsComponent} />
-            </LayoutClassroom>
-          );
-        } else {
-          return (
-            <Redirect
-              to={{
-                pathname: "/login",
-                state: { from: propsComponent.location },
-              }}
-            />
-          );
-        }
-      }}
-    />
+    <LayoutClassroom>
+      <Component />
+    </LayoutClassroom>
   );
 }

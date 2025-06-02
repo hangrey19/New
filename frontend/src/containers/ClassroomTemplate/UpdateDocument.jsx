@@ -16,7 +16,7 @@ import CreatableSelect from "react-select/creatable";
 import Files from "react-files";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { pathImgFromIndex } from "../../utils/constants";
-import { Link, Redirect, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import {
   updateDocument,
   resetUpdateDocument,
@@ -25,13 +25,13 @@ import {
 } from "../../redux/modules/UpdateHomeworkDocument/action";
 import { actFetchDocumentDetailList } from "../../redux/modules/Homework/action";
 import Loading from "../../components/Loading";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function UpdateDocument() {
   const classInfo = JSON.parse(localStorage.getItem("classInfo"));
   const { classroomId, documentId } = useParams();
 
-  const history = useHistory();
+  const history = useNavigate();
   const dispatch = useDispatch();
   const [render, setRender] = useState(false);
 
@@ -309,7 +309,7 @@ function UpdateDocument() {
       // alert("Chỉnh sửa thông tin và file đính kèm của tài liệu thành công!");
       setTimeout(handleReset, 1000);
       return (
-        <Redirect
+        <Navigate
           to={{
             pathname: `/classroom/${classroomId}/homework`,
             state: {
@@ -326,7 +326,7 @@ function UpdateDocument() {
       // alert("Chỉnh sửa thông tin của tài liệu thành công!");
       setTimeout(handleReset, 1000);
       return (
-        <Redirect
+        <Navigate
           to={{
             pathname: `/classroom/${classroomId}/homework`,
             state: { reason: "Chỉnh sửa thông tin của tài liệu thành công!" },
@@ -340,7 +340,7 @@ function UpdateDocument() {
       // alert("Chỉnh sửa file đính kèm của tài liệu thành công!");
       setTimeout(handleReset, 1000);
       return (
-        <Redirect
+        <Navigate
           to={{
             pathname: `/classroom/${classroomId}/homework`,
             state: {

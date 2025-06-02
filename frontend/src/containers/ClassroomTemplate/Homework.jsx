@@ -1,11 +1,11 @@
 import React from "react";
 import ListHomework from "../../components/ListHomework";
 import OperationHomework from "../../components/OperationHomework";
-import { useLocation, useHistory } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Homework() {
   const location = useLocation();
-  const history = useHistory();
+  const history = useNavigate();
 
   // console.log("location: " + location);
 
